@@ -1,4 +1,5 @@
 <?php 
+namespace classes;
 class Balance {
     public function calcularBalance() {
         // Lógica para calcular el balance aquí

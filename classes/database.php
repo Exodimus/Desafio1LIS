@@ -1,4 +1,6 @@
 <?php 
+namespace classes;
+use mysqli;
 class Database
 {
     const DBHOSTNAME = "localhost";

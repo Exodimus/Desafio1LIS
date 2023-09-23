@@ -42,53 +42,6 @@ if (formLogin != null) {
 }
 
 
-// Recorre todos los items
-navItems.forEach(navItem => {
-  navItem.addEventListener('click', () => {
-    //Quita la clase active
-    navItems.forEach(item => item.querySelector('.nav-link').classList.remove('active'));
-    // Si existe la clase active la quita, si no la agrega
-    navItem.querySelector('.nav-link').classList.toggle('active');
-
-    // Verifica el elemento seleccionado
-    switch (navItem.querySelector('.nav-link').textContent) {
-        case 'Entradas':
-          btnTransac.classList.add("depositar")
-            div.innerHTML = `                      <label for="tipoEntrada" class="form-label fw-bold lblAct">Tipo de Entrada</label>
-            <input type="text" class="form-control" id="tipoEntrada" required>
-    
-            <label for="monto" class="form-label fw-bold lblAct">Monto</label>
-            <input type="number" min="1" class="form-control" id="monto" required>
-    
-            <label for="fecha" class="form-label fw-bold lblAct">Fecha</label>
-            <input type="date" class="form-control" id="fecha" required>
-    
-            <label for="fotoFactura" class="form-label fw-bold lblAct">Factura</label>
-            <input type="file" class="form-control" id="fotoFactura" accept="image/*" required>
-    
-            <button type="submit" id="enviar" onclick="transactControl()" class="btn btn-primary depositar mt-3 bg-success">Enter</button>`;  
-          break;
-        case 'Salidas':
-          btnTransac.classList.remove("depositar")
-            div.innerHTML = `        <label for="tipoSalida" class="form-label fw-bold lblAct">Tipo de Salida</label>
-            <input type="text" class="form-control" id="tipoSalida" required>
-    
-            <label for="montoSalida" class="form-label fw-bold lblAct">Monto</label>
-            <input type="number" min="1" class="form-control" id="montoSalida" required>
-    
-            <label for="fechaSalida" class="form-label fw-bold lblAct">Fecha</label>
-            <input type="date" class="form-control" id="fechaSalida" required>
-    
-            <label for="facturaSalida" class="form-label fw-bold lblAct">Factura</label>
-            <input type="file" class="form-control" id="facturaSalida" accept="image/*" required>
-    
-            <button type="submit" id="enviar" onclick="transactControl()" class="btn btn-primary depositar mt-3 bg-success">Enter</button>
-    `;
-          break;
-      } 
-  });
-});
-
   // Obtener la fecha y hora actual
   var fechaActual = new Date();
 
@@ -123,54 +76,46 @@ navItems.forEach(navItem => {
   }
   
   //Maneja las transacciones
-  function transactControl() {
-    let monto = parseInt(document.querySelector("#monto").value);
-    let nota = document.querySelector("#nota").value;
-    if (monto != '' && nota != '') {
-      if (btnTransac.classList.contains("depositar")) {
-        saldo += monto;
-        historial.push({ tipo: "deposito", monto: monto, nota: nota });
-          //Guarda los datos en local storage
-          localStorage.setItem("saldo", saldo.toString());
-          localStorage.setItem("historial", JSON.stringify(historial));
-        swal("Transacción realizada correctamente", "", "success").then(() =>{
-          //Genera pdf
-          var doc = new jsPDF();
-          doc.setFont("helvetica"); // Cambiar la fuente a Helvetica
-          doc.setFontSize(12); // Cambiar el tamaño de fuente a 12
-          doc.text(`Tipo de transacción: Depósito\n Monto: $${monto}\n Nota: ${nota}\n Fecha: ${fechaHoraActual}`, 20, 20, )
-          doc.save('reporte.pdf')
-          //Limpia los campos
-          document.getElementById("monto").value = "";
-          document.getElementById("nota").value = "";
-        })
-      } else {
-        if (monto <= saldo) {
-          saldo -= monto;
-          historial.push({ tipo: "retiro", monto: monto, nota: nota });
-          //guarda los datos en local storage
-          localStorage.setItem("saldo", saldo);
-          localStorage.setItem("historial", JSON.stringify(historial));
-
-          swal("Transacción realizada correctamente", "", "success").then(() =>{
-            //Genera pdf
-            var doc = new jsPDF();
-            doc.setFont("helvetica"); // Cambiar la fuente a Helvetica
-            doc.setFontSize(12); // Cambiar el tamaño de fuente a 12
-            doc.text(`Tipo de transacción: Retiro\n Monto: $${monto}\n Nota: ${nota}\n Fecha: ${fechaHoraActual}`, 20, 20, )
-            doc.save('reporte.pdf')
-            //Limpia los campos
-            document.getElementById("monto").value = "";
-            document.getElementById("nota").value = "";
-          })
-        } else {
-          swal("Saldo insuficiente", "", "error")
+  function transactControl(event, tipoTransaccion) {
+    event.preventDefault(); // Evita que el formulario se envíe automáticamente
+    
+    // Recopila los datos del formulario
+    var tipo = document.getElementById('tipo' + tipoTransaccion).value;
+    var monto = document.getElementById('monto').value;
+    var fecha = document.getElementById('fecha').value;
+    var fotoFactura = document.getElementById('fotoFactura').files[0]; // El primer archivo seleccionado
+    
+    // Realiza una solicitud AJAX para enviar los datos al servidor
+    var formData = new FormData();
+    formData.append('tipo', tipo);
+    formData.append('monto', monto);
+    formData.append('fecha', fecha);
+    formData.append('factura', fotoFactura);
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'registrar_' + tipoTransaccion + '.php', true); // Reemplaza 'registrar_entrada.php' con la URL correcta
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            // La solicitud se ha completado y la respuesta se ha recibido correctamente
+            var respuesta = xhr.responseText;
+            if (respuesta === 'success') {
+                // La entrada/salida se registró correctamente
+                document.getElementById('mensaje').classList.remove('alert-danger');
+                document.getElementById('mensaje').classList.add('alert-success');
+                document.getElementById('mensaje').textContent = tipoTransaccion.charAt(0).toUpperCase() + tipoTransaccion.slice(1) + ' registrada exitosamente.';
+                document.getElementById('mensaje').style.display = 'block';
+            } else {
+                // Hubo un error al registrar la entrada/salida
+                document.getElementById('mensaje').classList.remove('alert-success');
+                document.getElementById('mensaje').classList.add('alert-danger');
+                document.getElementById('mensaje').textContent = 'Error al registrar la ' + tipoTransaccion + '.';
+                document.getElementById('mensaje').style.display = 'block';
+            }
         }
-      }
-    } else {
-      swal("No se permiten campos vacíos", "", "error")
-    }
-  }
+    };
+    xhr.send(formData);
+}
+
   
 window.addEventListener("load", function() {
   if (window.location.href.includes("transacciones.html")) {
