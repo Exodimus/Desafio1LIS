@@ -40,4 +40,22 @@ footer{
 #acquisitions {
     max-height: 50%;
   }
+  
+  
+.fa-calendar {
+  position: absolute;
+  top: 13px;
+  font-size: 20px;
+  color: #1976D2;
+  z-index: 1000;
+}
+
+#fa-1 {
+  left: calc(50% - 40px);
+}
+
+#fa-2 {
+  left: calc(100% - 40px);
+}
+
 
