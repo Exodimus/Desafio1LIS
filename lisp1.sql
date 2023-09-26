@@ -2,10 +2,10 @@
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Sep 16, 2023 at 01:32 AM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.1.12
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 26-09-2023 a las 06:23:14
+-- Versión del servidor: 10.4.27-MariaDB
+-- Versión de PHP: 8.1.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `lisp1`
+-- Base de datos: `lisp1`
 --
 
 DELIMITER $$
 --
--- Procedures
+-- Procedimientos
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `gen_balance_general` ()   begin
 
@@ -83,12 +83,90 @@ close b1;
 select * from bal_gen;
 end$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `gen_balance_general_fecha` (IN `fecha_ini` DATE, `fecha_fini` DATE)   begin
+
+
+declare mov_final integer default 0;
+declare mov_fecha date;
+declare mov_monto decimal(12,2);
+declare mov_tipo varchar(50);
+declare mov_mtipo varchar(5);
+declare mov_entrada decimal(12,2);
+declare mov_salida decimal(12,2);
+declare mov_id integer;
+
+declare saldo_anterior decimal(12,2) default 0.0;
+declare saldo_actual decimal(12,2);
+
+
+
+
+
+declare b1 cursor for select id,tipo,fecha,monto,mtipo from movimientos where fecha between fecha_ini and fecha_fini order by fecha asc;
+
+declare continue handler for not found set mov_final=1;
+
+drop TEMPORARY table if exists bal_gen;
+create TEMPORARY TABLE bal_gen(
+bal_saldo_anterior decimal(18,2),
+bal_fecha date,
+bal_entrada decimal(18,2),
+bal_salida decimal(18,2),
+bal_saldo_actual decimal(18,2)
+);
+
+open b1;
+bucle: LOOP
+
+FETCH b1 into mov_id,mov_tipo,mov_fecha,mov_monto,mov_mtipo;
+if mov_final=1 THEN
+leave bucle;
+end if;
+
+if mov_mtipo='E' THEN
+set saldo_actual=saldo_anterior+mov_monto;
+set mov_entrada=mov_monto;
+set mov_salida=0.0;
+ELSE
+set saldo_actual=saldo_anterior-mov_monto;
+set mov_entrada=0.0;
+set mov_salida=mov_monto;
+end if;
+
+insert into bal_gen(bal_saldo_anterior,bal_fecha,bal_entrada,bal_salida,bal_saldo_actual) values(saldo_anterior,mov_fecha,mov_entrada,mov_salida,saldo_actual);
+set saldo_anterior=saldo_actual;
+end loop bucle;
+close b1;
+
+select * from bal_gen;
+end$$
+
 DELIMITER ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `entrada`
+-- Estructura de tabla para la tabla `datos_usuario`
+--
+
+CREATE TABLE `datos_usuario` (
+  `dus_id` int(11) NOT NULL,
+  `dus_usuario` int(11) NOT NULL,
+  `dus_nombre` varchar(100) NOT NULL,
+  `dus_edad` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `datos_usuario`
+--
+
+INSERT INTO `datos_usuario` (`dus_id`, `dus_usuario`, `dus_nombre`, `dus_edad`) VALUES
+(1, 1, 'EVELING JANETH SANTOS', 35);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -100,14 +178,17 @@ CREATE TABLE `entrada` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Dumping data for table `entrada`
+-- Volcado de datos para la tabla `entrada`
 --
+
+INSERT INTO `entrada` (`ent_id`, `ent_tipo`, `ent_monto`, `ent_fecha`, `ent_factura`) VALUES
+(1, 'PAGO DE SALARIO', '500.00', '2023-09-01 00:00:00', '');
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `movimientos`
--- (See below for the actual view)
+-- Estructura Stand-in para la vista `movimientos`
+-- (Véase abajo para la vista actual)
 --
 CREATE TABLE `movimientos` (
 `id` int(11)
@@ -120,7 +201,7 @@ CREATE TABLE `movimientos` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `salida`
+-- Estructura de tabla para la tabla `salida`
 --
 
 CREATE TABLE `salida` (
@@ -132,14 +213,16 @@ CREATE TABLE `salida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Dumping data for table `salida`
+-- Volcado de datos para la tabla `salida`
 --
 
+INSERT INTO `salida` (`sal_id`, `sal_tipo`, `sal_monto`, `sal_fecha`, `sal_factura`) VALUES
+(1, 'FACTURA', '10.00', '2023-09-02 00:00:00', '');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tipo_mov`
+-- Estructura de tabla para la tabla `tipo_mov`
 --
 
 CREATE TABLE `tipo_mov` (
@@ -152,7 +235,7 @@ CREATE TABLE `tipo_mov` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `usuario`
+-- Estructura de tabla para la tabla `usuario`
 --
 
 CREATE TABLE `usuario` (
@@ -161,70 +244,89 @@ CREATE TABLE `usuario` (
   `usr_password` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`usr_id`, `usr_nombre`, `usr_password`) VALUES
+(1, 'esantos', '123');
+
 -- --------------------------------------------------------
 
 --
--- Structure for view `movimientos`
+-- Estructura para la vista `movimientos`
 --
 DROP TABLE IF EXISTS `movimientos`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `movimientos`  AS SELECT `entrada`.`ent_id` AS `id`, `entrada`.`ent_tipo` AS `tipo`, `entrada`.`ent_fecha` AS `fecha`, `entrada`.`ent_monto` AS `monto`, 'E' AS `mtipo` FROM `entrada` union select `salida`.`sal_id` AS `id`,`salida`.`sal_tipo` AS `tipo`,`salida`.`sal_fecha` AS `fecha`,`salida`.`sal_monto` AS `monto`,'S' AS `mtipo` from `salida`  ;
 
 --
--- Indexes for dumped tables
+-- Índices para tablas volcadas
 --
 
 --
--- Indexes for table `entrada`
+-- Indices de la tabla `datos_usuario`
+--
+ALTER TABLE `datos_usuario`
+  ADD PRIMARY KEY (`dus_id`);
+
+--
+-- Indices de la tabla `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`ent_id`);
 
 --
--- Indexes for table `salida`
+-- Indices de la tabla `salida`
 --
 ALTER TABLE `salida`
   ADD PRIMARY KEY (`sal_id`);
 
 --
--- Indexes for table `tipo_mov`
+-- Indices de la tabla `tipo_mov`
 --
 ALTER TABLE `tipo_mov`
   ADD PRIMARY KEY (`tip_id`);
 
 --
--- Indexes for table `usuario`
+-- Indices de la tabla `usuario`
 --
 ALTER TABLE `usuario`
   ADD PRIMARY KEY (`usr_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT for table `entrada`
+-- AUTO_INCREMENT de la tabla `datos_usuario`
+--
+ALTER TABLE `datos_usuario`
+  MODIFY `dus_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `entrada`
 --
 ALTER TABLE `entrada`
   MODIFY `ent_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `salida`
+-- AUTO_INCREMENT de la tabla `salida`
 --
 ALTER TABLE `salida`
   MODIFY `sal_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `tipo_mov`
+-- AUTO_INCREMENT de la tabla `tipo_mov`
 --
 ALTER TABLE `tipo_mov`
   MODIFY `tip_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `usuario`
+-- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `usr_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `usr_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
