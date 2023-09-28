@@ -2,10 +2,11 @@
 namespace classes;
 use mysqli;
 use Exception;
+require('database.php');
 class Login {
     private $usuario;
     private $contrasena;
-
+    private $nusuario;
     public function __construct($usuario, $contrasena) {
         $this->usuario = $usuario;
         $this->contrasena = $contrasena;
@@ -14,7 +15,7 @@ class Login {
     public function autenticar() {
         // Crear una instancia de la clase Database
         $database = new Database();
-    
+        
         // Obtener una conexión a la base de datos
         $conexion = $database->createConnection();
     
@@ -45,7 +46,30 @@ class Login {
         return false; // Autenticación fallida
     }
     
+    public function obtener_usuario($clave){
+                // Crear una instancia de la clase Database
+        $database = new Database();
     
+        // Obtener una conexión a la base de datos
+        $conexion = $database->createConnection();
+    
+        // Verificar la conexión
+        if ($conexion->connect_error) {
+            throw new Exception("Error en la conexión a la base de datos: " . $conexion->connect_error);
+        }
+        $sql="select dus_nombre from usuario inner join datos_usuario on usr_id=dus_usuario where usr_nombre='".$clave."'";
+        $resultado=$conexion->query($sql);
+        
+                // Verificar si se encontró un usuario con las credenciales proporcionadas
+        if ($resultado->num_rows === 1) {
+            // Cierre la conexión a la base de datos
+            $database->closeConnection($conexion);
+            return $resultado->fetch_array()['dus_nombre']; // Autenticación exitosa
+        }
+                // Cierre la conexión a la base de datos
+        $database->closeConnection($conexion);
+        return ""; // Autenticación fallida
+    }
     
 }
 

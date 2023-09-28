@@ -1,3 +1,6 @@
+<?php 
+require('classes\login.php');
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,24 +17,31 @@
             <div class="col-4 w-50 d-none d-lg-block p-0"><img src="img/login.jpg" class="img-fluid"></div>
             <div class="col-8 col-lg-4 w-50">
                 <?php
-                 use classes\Login;
+                 use classes\login;
 
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $usuario = $_POST['user'];
                     $contrasena = $_POST['pass'];
 
                     // Crear una instancia de la clase Login
-                    $login = new Login($usuario, $contrasena);
+                
+                    $login = new login($usuario, $contrasena);
 
                     // Autenticar al usuario
                     if ($login->autenticar()) {
                         // Autenticación exitosa, redirigir al usuario a la página de inicio o a donde sea necesario
+                        $nusuario= $login->obtener_usuario($usuario);
+                        
+                        session_start();
+                        $_SESSION['nombre'] = $nusuario;
+                        
                         header('Location: entradas.php');
                         exit;
                     } else {
                         // Autenticación fallida, mostrar un mensaje de error
                         echo '<p class="text-danger">Autenticación fallida. Por favor, verifica tus credenciales.</p>';
                     }
+                                        
                 }
                 ?>
                 <form action="" method="POST">

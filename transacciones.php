@@ -1,4 +1,9 @@
-  <div class="container-fluid bg-light contenedor-main">
+<?php
+include 'includes/templates/header.php';
+include 'includes/templates/nav.php';
+
+?>
+<div class="container-fluid bg-light contenedor-main">
     <div class="col-12 px-0 bg-gray">
       <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
