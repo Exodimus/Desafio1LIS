@@ -6,7 +6,6 @@ require('database.php');
 class Login {
     private $usuario;
     private $contrasena;
-    private $nusuario;
     public function __construct($usuario, $contrasena) {
         $this->usuario = $usuario;
         $this->contrasena = $contrasena;
@@ -46,7 +45,7 @@ class Login {
         return false; // Autenticación fallida
     }
     
-    public function obtener_usuario($clave){
+    public function obtenerUsuario($clave){
                 // Crear una instancia de la clase Database
         $database = new Database();
     

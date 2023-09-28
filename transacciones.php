@@ -7,9 +7,6 @@ include 'includes/templates/nav.php';
     <div class="col-12 px-0 bg-gray">
       <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
-          <a class="navbar-brand me-auto" href="entradas.php">
-            <button class="btn btn-primary btn-lg">Volver</button>
-          </a>
           <!-- Botón para mostrar el balance y redireccionar -->
           <a class="navbar-brand fw-bold" href="balance.html">Mostrar balance</a>
         </div>

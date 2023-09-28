@@ -18,7 +18,6 @@ require('classes\login.php');
             <div class="col-8 col-lg-4 w-50">
                 <?php
                  use classes\login;
-
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $usuario = $_POST['user'];
                     $contrasena = $_POST['pass'];
@@ -30,7 +29,7 @@ require('classes\login.php');
                     // Autenticar al usuario
                     if ($login->autenticar()) {
                         // Autenticación exitosa, redirigir al usuario a la página de inicio o a donde sea necesario
-                        $nusuario= $login->obtener_usuario($usuario);
+                        $nusuario= $login->obtenerUsuario($usuario);
                         
                         session_start();
                         $_SESSION['nombre'] = $nusuario;

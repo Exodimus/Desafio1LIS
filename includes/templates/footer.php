@@ -1,5 +1,5 @@
 <footer class="fixed-bottom bg-gray  text-center fw-bold">
-          <div class="container p-3">
+          <div class="container p-2">
             <span>Grupo 1</span>
           </div>
         </footer>
