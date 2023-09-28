@@ -1,6 +1,6 @@
 <?php
 namespace classes;
-
+require('database.php');
 use Exception; 
 
 class Entrada {
@@ -39,7 +39,7 @@ class Entrada {
         }
 
         // Bind de los parámetros
-        $stmt->bind_param("sds", $this->tipo, $this->monto, $this->fecha, $this->factura);
+        $stmt->bind_param("sdss", $this->tipo, $this->monto, $this->fecha, $this->factura);
 
         // Ejecutar la sentencia
         if ($stmt->execute()) {
