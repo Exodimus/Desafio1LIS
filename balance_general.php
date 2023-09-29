@@ -1,5 +1,6 @@
 <?php
 require('classes/balance.php');
+
 include 'includes/templates/header.php';
 include 'includes/templates/nav.php';
 use classes\balance;
@@ -20,7 +21,7 @@ $('.input-daterange').datepicker({
 <div class="container-fluid bg-light contenedor-main">
     <div class="row">
 
-  <form autocomplete="off" method="POST" action="">
+  <form autocomplete="off" method="POST" action="" id="form_fechas">
     <div class="flex-row d-flex justify-content-center">
       <div class="col-lg-6 col-11 px-1">
           
@@ -34,7 +35,7 @@ $('.input-daterange').datepicker({
           <span class="fa fa-calendar" id="fa-2"></span>
         </div>         
       </div>
-        <button type="submit" class="btn btn-primary text-left mr-2">CALCULAR</button>  
+        <button type="button" id="boton2" onclick="this.form.submit()" class="btn btn-primary text-left mr-2">CALCULAR</button>  
     </div>
   </form>
   </div>
@@ -48,35 +49,50 @@ $('.input-daterange').datepicker({
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $fini=$_POST['inicio'];
       $ffini=$_POST['fin'];
+      $_SESSION['fini']=$fini;
+      $_SESSION['ffini']=$ffini;
+        $GLOBALS['finicio']=$fini;
+        $GLOBALS['ffinal']=$ffini; 
+      $cbalance=new balance($GLOBALS['finicio'],$GLOBALS['ffinal']);
+      $bal=$cbalance->calcularBalance();
 
-      $cbalance=new balance($fini,$ffini);
-      $bal=$cbalance->calcularBalance($fini, $ffini);
       if ($bal==="")
       {}
       else{
-          echo "<table class='table'>";
-          echo "<thead><tr>";
-          echo "<th scope='col'>SALDO ANTERIOR</th>";
-          echo "<th scope='col'>FECHA</th>";
-          echo "<th scope='col'>ENTRADA(+)</th>";
-          echo "<th scope='col'>SALIDA(-)</th>";
-          echo "<th scope='col'>SALDO ACTUAL</th>";
-          echo "</tr></thead> <tbody>";
+          ?>
+          <table class='table'>
+          <thead>
+              <tr>
+          <th scope='col'>SALDO ANTERIOR</th>
+          <th scope='col'>FECHA</th>
+          <th scope='col'>ENTRADA(+)</th>
+          <th scope='col'>SALIDA(-)</th>
+          <th scope='col'>SALDO ACTUAL</th>
+          </tr>
+          </thead>
+          <tbody>
+          <?php
           foreach ($bal as $valor)
           {
               echo "<tr>";
               echo "<td>".$valor[0]. "</td>";
               echo "<td>".$valor[1]. "</td>";
               echo "<td>".$valor[2]. "</td>";
-              echo "<td>".$valor[3]. "</td>";
+              echo "<td>".$valor[3]. "</td>";   
               echo "<td>".$valor[4]. "</td>";
               echo "</tr>";
           }
-          echo "</tbody></table>";
-          echo "</div><div class='row'>";
-          echo "<div class='col-2'></div>";
-          echo "<div class='col-11'><button type='button' class='btn btn-primary text-left mr-2'>IMPRIMIR</button></div>";
-          echo "<div class='col-2'></div>";
+          ?>
+         </tbody>
+          </table>
+          </div>
+
+        <div class='row'>
+                <div class='col-2'></div>
+                <div class='col-11'><a class="btn btn-primary" href="classes/ImprimirPdf.php" target="_blank" role="button">Generar PDF</a></div>
+                <div class='col-2'></div>
+          <?php
+          
       }
       }
     
@@ -95,6 +111,6 @@ $('.input-daterange').datepicker({
     </div>
     
 </div>
-  
+
 
 <?php include 'includes/templates/footer.php'; ?>
