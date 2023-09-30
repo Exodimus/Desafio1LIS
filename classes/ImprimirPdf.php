@@ -8,26 +8,43 @@ use ImprimirTabla;
 class ImprimirPdf {
 function imp()
 {
-    session_start();
+session_start();
 $imprimir=new ImprimirTabla();
-$GLOBALS['finicio']=$_SESSION['fini'];
-$GLOBALS['ffinal']=$_SESSION['ffini'];
-$genBalance=new balance($GLOBALS['finicio'],$GLOBALS['ffinal']);
-$data=$genBalance->calcularBalance();
+$i=$_SESSION['fini'];
+$f=$_SESSION['ffini'];
+$genBalance=new balance();
+$data=$genBalance->calcularBalance($i,$f);
 
 $imprimir->addpage();// First table: output all columns
-
-$imprimir->cabecera2($GLOBALS['finicio'], $GLOBALS['ffinal']);
+$imprimir->cabecera2($i, $f);
 
 $imprimir->SetWidths(array(40, 50, 30, 30,40));
-$imprimir->cabecera();
-$imprimir->SetFont('Times', '', 9);
+
+
+
 if ($data<>"")
 {
-   
+   $i=0;
+   $final=count($data)-1;
+   $saldo1=$data[$final][0];
+   $saldo2=$data[$final][4];
+   $imprimir->colocar_saldo($saldo1,$saldo2);
     foreach ($data as $valor)
     {
-        $imprimir->Row($valor);
+        if ($i!=0){
+            if ($i==1){
+                $imprimir->cabecera();
+            }
+            if ($i==$final){
+                $imprimir->SetFont('Times', 'B', 9);
+                $imprimir->Row($valor); 
+            }
+           else{
+               $imprimir->SetFont('Times', '', 9);
+               $imprimir->Row($valor); 
+           }
+        }
+        $i=$i+1;
     }
 }
 ob_get_length();
