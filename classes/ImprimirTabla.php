@@ -21,7 +21,7 @@ class ImprimirTabla extends FPDF{
     function cabecera(){
         $i=0;
         $x=10;
-        $y=35;
+        $y=45;
         $this->SetXY($x, $y);
         $this->SetFont('Times', 'B', 9);
         $cab=["S.ANTERIOR","FECHA","ENTRADA","SALIDA","S.ACTUAL"];
@@ -39,8 +39,26 @@ class ImprimirTabla extends FPDF{
             $this->SetXY($x+$w,$y);
         }
         $x=10;
+        $y=50;
+        $this->SetXY($x, $y);
+    }
+    function colocar_saldo($saldo_anterior,$saldo_actual)
+    {
+        $x=10;
+        $y=35;
+        $this->SetXY($x, $y);
+        $this->SetFont('Times', 'B', 10);
+        $this->Cell(190,10,'Saldo Anterior: '.$saldo_anterior,0,1,'L');
+        $x=10;
+        $y=35;
+        $this->SetXY($x, $y);
+        $this->Cell(190,10,'Saldo Actual: '.$saldo_actual,0,1,'R');
+        $x=10;
         $y=40;
         $this->SetXY($x, $y);
+    }
+    function saldo_actual($data){
+        
     }
     function sforma($dato){
         $resp=explode('-',$dato);
